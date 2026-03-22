@@ -1,0 +1,10 @@
+server:
+  host: "127.0.0.1"
+  port: 8080
+
+database:
+  path: "/opt/logwatch/data/logwatch.db"
+
+logs:
+  nginx_access: "/var/log/nginx/access.log"
+  nginx_error: "/var/log/nginx/error.log"

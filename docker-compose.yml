@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  logwatch:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./config.yaml:/app/config.yaml
+      - /var/log/nginx:/var/log/nginx:ro
+    environment:
+      - JWT_SECRET=your-super-secret-jwt-key-change-this
+    restart: unless-stopped
+    depends_on:
+      - db
+
+  db:
+    image: duckdb/duckdb:latest
+    volumes:
+      - ./data:/data
+    command: ["duckdb", "/data/logwatch.db"]
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge

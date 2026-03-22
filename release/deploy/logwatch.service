@@ -1,0 +1,31 @@
+[Unit]
+Description=LogWatch - Real-time VPS Log Analyzer
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=logwatch
+Group=logwatch
+WorkingDirectory=/opt/logwatch
+ExecStart=/opt/logwatch/bin/logwatch
+Restart=always
+RestartSec=5
+
+# Environment
+Environment=JWT_SECRET=CHANGE_THIS_TO_RANDOM_SECRET
+Environment=GIN_MODE=release
+
+# Security
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/logwatch/data
+ReadOnlyPaths=/var/log/nginx /var/log/auth.log /var/log/syslog
+
+# Logs
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=logwatch
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+data/
+bin/
+frontend/node_modules/
+internal/api/dist/
+*.db
+.env
+config/.env
+*.age
+*.pem
+*.key
