@@ -57,6 +57,12 @@ func main() {
 		log.Printf("[auth] %d user(s) registered", count)
 	}
 
+	// TOTP 2FA
+	totpManager := auth.NewTOTPManager(db.GetConn())
+	if err := totpManager.Init(); err != nil {
+		log.Printf("[totp] WARNING: %v", err)
+	}
+
 	// GeoIP
 	var geo *geoip.Resolver
 	geoPath := "data/geoip/GeoLite2-City.mmdb"
@@ -149,6 +155,7 @@ func main() {
 	}()
 
 	srv := api.New(db, cfg.Server.Port, jwtManager, userStore)
+	srv.SetTOTP(totpManager)
 	if geo != nil {
 		srv.SetGeo(geo)
 	}

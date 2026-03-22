@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Login from './Login'
 import Reports from './Reports'
 import WorldMap from './WorldMap'
+import Security2FA from './Security2FA'
 import { useWebSocket } from './hooks/useWebSocket'
 import {
   getStats, getTopPaths, getTopIPs, getStatusCodes,
@@ -400,6 +401,7 @@ export default function App() {
             { id:'users', label:'Users', icon:'👥', adminOnly:true },
             { id:'reports', label:'Reports', icon:'📄' },
             { id:'map', label:'World Map', icon:'🌍' },
+            { id:'2fa', label:'2FA Settings', icon:'🔐' },
           ].filter(t => !t.adminOnly || user?.role==='admin').map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               style={{ display:'flex', alignItems:'center', gap:6, padding:'12px 16px', fontSize:13, fontWeight:500, border:'none', background:'transparent', cursor:'pointer', borderBottom: tab===t.id?'2px solid #6366f1':'2px solid transparent', color: tab===t.id?'#a5b4fc':'#64748b', transition:'color 0.2s', position:'relative' }}>
@@ -417,6 +419,7 @@ export default function App() {
         {tab==='users'     && <UsersPage currentUser={user}/>}
         {tab==='reports'   && <Reports/>}
         {tab==='map'       && <WorldMap/>}
+        {tab==='2fa'       && <Security2FA/>}
       </main>
 
       <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} } @keyframes spin { to{transform:rotate(360deg)} }`}</style>

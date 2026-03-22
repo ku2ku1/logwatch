@@ -16,6 +16,9 @@ import (
 )
 
 type Server struct {
+	apiRL  *RateLimiter
+	authRL *RateLimiter
+	totp   *auth.TOTPManager
 	geo     *geoip.Resolver
 	db      *storage.DB
 	port    int
@@ -27,7 +30,9 @@ type Server struct {
 func New(db *storage.DB, port int, jwt *auth.JWTManager, users *auth.UserStore) *Server {
 	hub := NewHub()
 	go hub.Run()
-	return &Server{db: db, port: port, jwt: jwt, users: users, hub: hub}
+	apiRL  := NewRateLimiter(100, 60*time.Second, 60*time.Second)
+	authRL := NewRateLimiter(5, 60*time.Second, 5*60*time.Second)
+	return &Server{db: db, port: port, jwt: jwt, users: users, hub: hub, apiRL: apiRL, authRL: authRL}
 }
 
 func (s *Server) Start() error {
@@ -44,7 +49,7 @@ func (s *Server) Start() error {
 
 	// Public routes
 	r.Get("/health", s.handleHealth)
-	r.Post("/api/auth/login", s.handleLogin)
+	r.With(s.authRL.AuthMiddleware).Post("/api/auth/login", s.handleLogin)
 	r.Post("/api/auth/setup", s.handleSetup) // First-run admin setup
 	r.Get("/api/v1/ws", s.handleWebSocket) // WebSocket — JWT check inside handler
 
@@ -53,9 +58,13 @@ func (s *Server) Start() error {
 		r.Use(s.jwt.Middleware)
 
 		r.Get("/api/auth/me", s.handleMe)
+		r.Get("/api/auth/totp/status", s.handleTOTPStatus)
+		r.Post("/api/auth/totp/setup", s.handleTOTPSetup)
+		r.Post("/api/auth/totp/enable", s.handleTOTPEnable)
+		r.Post("/api/auth/totp/disable", s.handleTOTPDisable)
 		r.Post("/api/auth/logout", s.handleLogout)
 
-		r.Route("/api/v1", func(r chi.Router) {
+		r.With(s.apiRL.Middleware).Route("/api/v1", func(r chi.Router) {
 			// Viewer + Admin
 			r.Get("/stats", s.handleStats)
 			r.Get("/top/ips", s.handleTopIPs)
@@ -269,4 +278,8 @@ func securityHeaders(next http.Handler) http.Handler {
 func writeJSON(w http.ResponseWriter, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(v)
+}
+
+func (s *Server) SetTOTP(t *auth.TOTPManager) {
+	s.totp = t
 }
