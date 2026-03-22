@@ -1,11 +1,11 @@
 import axios from 'axios'
 
 // Production mein same domain use karo, development mein localhost
-const BASE = import.meta.env.PROD
+const BASE = ''
   ? ''
   : 'http://127.0.0.1:8080'
 
-const api = axios.create({ baseURL: BASE, withCredentials: true })
+const api = axios.create({ baseURL: '', withCredentials: true })
 
 api.interceptors.request.use(cfg => {
   const token = localStorage.getItem('token')

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const BASE = import.meta.env.PROD ? '' : 'http://127.0.0.1:8080'
+const BASE = ''
 
 function download(url, filename) {
   const token = localStorage.getItem('token')
