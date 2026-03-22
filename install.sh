@@ -47,7 +47,7 @@ ufw status 2>/dev/null | grep -q "Status: active" && UFW_ACTIVE=true
 
 # Domain detect
 if [ -d "/etc/letsencrypt/live" ]; then
-    DOMAIN=$(ls /etc/letsencrypt/live/ 2>/dev/null | head -1)
+    DOMAIN=$(ls /etc/letsencrypt/live/ 2>/dev/null | grep -v README | head -1)
     [ -n "$DOMAIN" ] && HAS_SSL=true
 fi
 
@@ -267,11 +267,13 @@ echo ""
 sleep 2
 
 # Create admin account
-echo -n "  Create admin username: "
-read ADMIN_USER
-echo -n "  Create admin password (min 8 chars): "
-read -s ADMIN_PASS
+# Admin credentials — environment variables ya defaults
+ADMIN_USER="${LOGWATCH_ADMIN_USER:-admin}"
+ADMIN_PASS="${LOGWATCH_ADMIN_PASS:-$(openssl rand -base64 12)}"
 echo ""
+echo "  Admin username: $ADMIN_USER"
+echo "  Admin password: $ADMIN_PASS"
+echo "  (Change after first login!)"
 
 curl -s -X POST "http://127.0.0.1:$PORT/api/auth/setup" \
     -H "Content-Type: application/json" \
