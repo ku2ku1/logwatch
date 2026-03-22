@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-export function useWebSocket(url) {
+export default function useWebSocket() {
   const [data, setData] = useState({})
   const [connected, setConnected] = useState(false)
   const ws = useRef(null)
@@ -9,35 +9,24 @@ export function useWebSocket(url) {
     const token = localStorage.getItem('token')
     if (!token) return
 
-    ws.current = new WebSocket(`${url}?token=${token}`)
+    // Auto-detect WebSocket URL from current page
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const host = window.location.host
+    const url = `${proto}//${host}/api/v1/ws?token=${token}`
 
-    ws.current.onopen = () => {
-      setConnected(true)
-    }
-
-    ws.current.onmessage = (event) => {
+    ws.current = new WebSocket(url)
+    ws.current.onopen = () => setConnected(true)
+    ws.current.onmessage = (e) => {
       try {
-        const msg = JSON.parse(event.data)
+        const msg = JSON.parse(e.data)
         setData(prev => ({ ...prev, [msg.type]: msg.data }))
-      } catch (err) {
-        console.error('WS parse error:', err)
-      }
+      } catch {}
     }
+    ws.current.onclose = () => setConnected(false)
+    ws.current.onerror = (e) => console.error('WS error:', e)
 
-    ws.current.onclose = () => {
-      setConnected(false)
-    }
-
-    ws.current.onerror = (error) => {
-      console.error('WS error:', error)
-    }
-
-    return () => {
-      if (ws.current) {
-        ws.current.close()
-      }
-    }
-  }, [url])
+    return () => ws.current?.close()
+  }, [])
 
   return { data, connected }
 }
