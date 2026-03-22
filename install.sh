@@ -107,7 +107,7 @@ info "Downloading LogWatch..."
 if [ -d "/opt/logwatch/src" ]; then
     cd /opt/logwatch/src && git pull -q
 else
-    git clone -q https://github.com/yourusername/logwatch /opt/logwatch/src
+    git clone -q https://github.com/ku2ku1/logwatch /opt/logwatch/src
 fi
 
 cd /opt/logwatch/src
