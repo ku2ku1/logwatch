@@ -51,7 +51,7 @@ func (t *TOTPManager) Generate(userID int64, username string) (*TOTPSetup, error
 	// Save secret (not enabled yet)
 	_, err = t.db.Exec(`
 		INSERT INTO user_totp (user_id, secret, enabled)
-		VALUES (?, ?, false)
+		VALUES ($1, $2, false)
 		ON CONFLICT (user_id) DO UPDATE SET secret = excluded.secret, enabled = false
 	`, userID, key.Secret())
 	if err != nil {
@@ -77,7 +77,7 @@ func (t *TOTPManager) Generate(userID int64, username string) (*TOTPSetup, error
 
 func (t *TOTPManager) Verify(userID int64, code string) (bool, error) {
 	var secret string
-	err := t.db.QueryRow(`SELECT secret FROM user_totp WHERE user_id = ?`, userID).Scan(&secret)
+	err := t.db.QueryRow(`SELECT secret FROM user_totp WHERE user_id = $1`, userID).Scan(&secret)
 	if err != nil {
 		return false, err
 	}
@@ -89,17 +89,17 @@ func (t *TOTPManager) Enable(userID int64, code string) error {
 	if err != nil || !valid {
 		return fmt.Errorf("invalid code")
 	}
-	_, err = t.db.Exec(`UPDATE user_totp SET enabled = true WHERE user_id = ?`, userID)
+	_, err = t.db.Exec(`UPDATE user_totp SET enabled = true WHERE user_id = $1`, userID)
 	return err
 }
 
 func (t *TOTPManager) IsEnabled(userID int64) bool {
 	var enabled bool
-	t.db.QueryRow(`SELECT enabled FROM user_totp WHERE user_id = ?`, userID).Scan(&enabled)
+	t.db.QueryRow(`SELECT enabled FROM user_totp WHERE user_id = $1`, userID).Scan(&enabled)
 	return enabled
 }
 
 func (t *TOTPManager) Disable(userID int64) error {
-	_, err := t.db.Exec(`DELETE FROM user_totp WHERE user_id = ?`, userID)
+	_, err := t.db.Exec(`DELETE FROM user_totp WHERE user_id = $1`, userID)
 	return err
 }
