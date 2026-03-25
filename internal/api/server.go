@@ -132,6 +132,7 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
+		Code     string `json:"code,omitempty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid request"}`, http.StatusBadRequest)
@@ -141,6 +142,18 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, `{"error":"invalid credentials"}`, http.StatusUnauthorized)
 		return
+	}
+	// Check TOTP if enabled
+	if s.totp != nil && s.totp.IsEnabled(user.ID) {
+		if req.Code == "" {
+			http.Error(w, `{"error":"TOTP code required"}`, http.StatusUnauthorized)
+			return
+		}
+		valid, err := s.totp.Verify(user.ID, req.Code)
+		if err != nil || !valid {
+			http.Error(w, `{"error":"invalid TOTP code"}`, http.StatusUnauthorized)
+			return
+		}
 	}
 	token, err := s.jwt.Generate(user)
 	if err != nil {
