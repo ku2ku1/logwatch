@@ -31,7 +31,7 @@ func New(db *storage.DB, port int, jwt *auth.JWTManager, users *auth.UserStore) 
 	hub := NewHub()
 	go hub.Run()
 	apiRL  := NewRateLimiter(100, 60*time.Second, 60*time.Second)
-	authRL := NewRateLimiter(5, 60*time.Second, 5*60*time.Second)
+	authRL := NewRateLimiter(20, 60*time.Second, 5*60*time.Second)
 	return &Server{db: db, port: port, jwt: jwt, users: users, hub: hub, apiRL: apiRL, authRL: authRL}
 }
 
