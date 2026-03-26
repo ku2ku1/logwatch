@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/yourusername/logwatch/internal/collector"
+	"github.com/yourusername/logvance/internal/collector"
 )
 
 func (s *Server) handleServices(w http.ResponseWriter, r *http.Request) {

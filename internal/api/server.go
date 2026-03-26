@@ -10,9 +10,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/yourusername/logwatch/internal/auth"
-	"github.com/yourusername/logwatch/internal/geoip"
-	"github.com/yourusername/logwatch/internal/storage"
+	"github.com/yourusername/logvance/internal/auth"
+	"github.com/yourusername/logvance/internal/geoip"
+	"github.com/yourusername/logvance/internal/storage"
 )
 
 type Server struct {
@@ -31,7 +31,7 @@ func New(db *storage.DB, port int, jwt *auth.JWTManager, users *auth.UserStore) 
 	hub := NewHub()
 	go hub.Run()
 	apiRL  := NewRateLimiter(100, 60*time.Second, 60*time.Second)
-	authRL := NewRateLimiter(20, 60*time.Second, 5*60*time.Second)
+	authRL := NewRateLimiter(5, 60*time.Second, 5*60*time.Second)
 	return &Server{db: db, port: port, jwt: jwt, users: users, hub: hub, apiRL: apiRL, authRL: authRL}
 }
 
@@ -41,7 +41,7 @@ func (s *Server) Start() error {
 	r.Use(middleware.Recoverer)
 	r.Use(securityHeaders)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174", "http://autun8nservice.duckdns.org:9090", "https://autun8nservice.duckdns.org:9090"},
+		AllowedOrigins:   []string{"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174"},
 		AllowedMethods:   []string{"GET", "POST", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
@@ -49,7 +49,6 @@ func (s *Server) Start() error {
 
 	// Public routes
 	r.Get("/health", s.handleHealth)
-	r.Get("/api/health", s.handleHealth)
 	r.With(s.authRL.AuthMiddleware).Post("/api/auth/login", s.handleLogin)
 	r.Post("/api/auth/setup", s.handleSetup) // First-run admin setup
 	r.Get("/api/v1/ws", s.handleWebSocket) // WebSocket — JWT check inside handler
@@ -133,7 +132,6 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
-		Code     string `json:"code,omitempty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid request"}`, http.StatusBadRequest)
@@ -143,18 +141,6 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, `{"error":"invalid credentials"}`, http.StatusUnauthorized)
 		return
-	}
-	// Check TOTP if enabled
-	if s.totp != nil && s.totp.IsEnabled(user.ID) {
-		if req.Code == "" {
-			http.Error(w, `{"error":"TOTP code required"}`, http.StatusUnauthorized)
-			return
-		}
-		valid, err := s.totp.Verify(user.ID, req.Code)
-		if err != nil || !valid {
-			http.Error(w, `{"error":"invalid TOTP code"}`, http.StatusUnauthorized)
-			return
-		}
 	}
 	token, err := s.jwt.Generate(user)
 	if err != nil {

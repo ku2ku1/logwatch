@@ -15,7 +15,7 @@ info() { echo -e "${BLUE}[→]${NC} $1"; }
 
 echo ""
 echo "╔══════════════════════════════════════════╗"
-echo "║     LogWatch — VPS Log Analyzer          ║"
+echo "║     Logvance — VPS Log Analyzer          ║"
 echo "║     Universal Installer v1.0             ║"
 echo "╚══════════════════════════════════════════╝"
 echo ""
@@ -93,24 +93,24 @@ fi
 log "Node: $(node --version)"
 
 # ── STEP 3: Create user & directories ───────────
-info "Creating logwatch user..."
-id -u logwatch &>/dev/null || useradd -r -s /bin/false -d /opt/logwatch logwatch
-usermod -aG adm logwatch 2>/dev/null || true
-usermod -aG systemd-journal logwatch 2>/dev/null || true
-$DOCKER_RUNNING && usermod -aG docker logwatch 2>/dev/null || true
+info "Creating logvance user..."
+id -u logvance &>/dev/null || useradd -r -s /bin/false -d /opt/logvance logvance
+usermod -aG adm logvance 2>/dev/null || true
+usermod -aG systemd-journal logvance 2>/dev/null || true
+$DOCKER_RUNNING && usermod -aG docker logvance 2>/dev/null || true
 
-mkdir -p /opt/logwatch/{bin,data,data/geoip,config,logs}
+mkdir -p /opt/logvance/{bin,data,data/geoip,config,logs}
 log "Directories created"
 
 # ── STEP 4: Clone & build ───────────────────────
-info "Downloading LogWatch..."
-if [ -d "/opt/logwatch/src" ]; then
-    cd /opt/logwatch/src && git pull -q
+info "Downloading Logvance..."
+if [ -d "/opt/logvance/src" ]; then
+    cd /opt/logvance/src && git pull -q
 else
-    git clone -q https://github.com/ku2ku1/logwatch /opt/logwatch/src
+    git clone -q https://github.com/ku2ku1/logvance /opt/logvance/src
 fi
 
-cd /opt/logwatch/src
+cd /opt/logvance/src
 
 info "Building frontend..."
 cd frontend
@@ -120,13 +120,13 @@ cp -r dist ../internal/api/dist
 cd ..
 
 info "Building binary..."
-CGO_ENABLED=1 go build -ldflags="-s -w" -o /opt/logwatch/bin/logwatch ./cmd/logwatch
-log "Binary built: $(ls -lh /opt/logwatch/bin/logwatch | awk '{print $5}')"
+CGO_ENABLED=1 go build -ldflags="-s -w" -o /opt/logvance/bin/logvance ./cmd/logvance
+log "Binary built: $(ls -lh /opt/logvance/bin/logvance | awk '{print $5}')"
 
 # ── STEP 5: GeoIP database ──────────────────────
 info "Downloading GeoIP database..."
 wget -q "https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-City.mmdb" \
-    -O /opt/logwatch/data/geoip/GeoLite2-City.mmdb && log "GeoIP ready" || warn "GeoIP download failed (optional)"
+    -O /opt/logvance/data/geoip/GeoLite2-City.mmdb && log "GeoIP ready" || warn "GeoIP download failed (optional)"
 
 # ── STEP 6: Auto-configure based on environment ─
 info "Auto-configuring for your environment..."
@@ -144,13 +144,13 @@ fi
 
 JWT_SECRET=$(openssl rand -hex 32)
 
-cat > /opt/logwatch/config/config.yaml << EOF
+cat > /opt/logvance/config/config.yaml << EOF
 server:
   host: "127.0.0.1"
   port: $PORT
 
 database:
-  path: "/opt/logwatch/data/logwatch.db"
+  path: "/opt/logvance/data/logvance.db"
 
 logs:
   nginx_access: "$NGINX_LOG"
@@ -160,32 +160,32 @@ logs:
   ufw_log: "/var/log/ufw.log"
 
 geoip:
-  path: "/opt/logwatch/data/geoip/GeoLite2-City.mmdb"
+  path: "/opt/logvance/data/geoip/GeoLite2-City.mmdb"
 EOF
 
-cat > /opt/logwatch/config/.env << EOF
+cat > /opt/logvance/config/.env << EOF
 JWT_SECRET=$JWT_SECRET
 PORT=$PORT
 EOF
 
-chmod 600 /opt/logwatch/config/.env
+chmod 600 /opt/logvance/config/.env
 log "Config generated"
 
 # ── STEP 7: Systemd service ──────────────────────
 info "Installing systemd service..."
-cat > /etc/systemd/system/logwatch.service << EOF
+cat > /etc/systemd/system/logvance.service << EOF
 [Unit]
-Description=LogWatch — Universal VPS Log Analyzer
+Description=Logvance — Universal VPS Log Analyzer
 After=network.target
 StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-User=logwatch
-Group=logwatch
-WorkingDirectory=/opt/logwatch
-EnvironmentFile=/opt/logwatch/config/.env
-ExecStart=/opt/logwatch/bin/logwatch
+User=logvance
+Group=logvance
+WorkingDirectory=/opt/logvance
+EnvironmentFile=/opt/logvance/config/.env
+ExecStart=/opt/logvance/bin/logvance
 Restart=always
 RestartSec=5
 
@@ -193,20 +193,20 @@ RestartSec=5
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
-ReadWritePaths=/opt/logwatch/data /opt/logwatch/logs
-ReadOnlyPaths=/var/log /opt/logwatch/config
+ReadWritePaths=/opt/logvance/data /opt/logvance/logs
+ReadOnlyPaths=/var/log /opt/logvance/config
 
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=logwatch
+SyslogIdentifier=logvance
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable logwatch
-systemctl start logwatch
+systemctl enable logvance
+systemctl start logvance
 log "Service started"
 
 # ── STEP 8: Nginx reverse proxy ─────────────────
@@ -214,11 +214,11 @@ info "Configuring Nginx..."
 
 if $HAS_SSL && [ -n "$DOMAIN" ]; then
     # Check if domain already has nginx config
-    if grep -r "logwatch\|$PORT" /etc/nginx/sites-enabled/ &>/dev/null; then
+    if grep -r "logvance\|$PORT" /etc/nginx/sites-enabled/ &>/dev/null; then
         warn "Nginx already has entry for port $PORT, skipping"
     else
-        cat > /etc/nginx/sites-available/logwatch << EOF
-# LogWatch — added by installer
+        cat > /etc/nginx/sites-available/logvance << EOF
+# Logvance — added by installer
 server {
     listen 8443 ssl http2;
     server_name $DOMAIN;
@@ -238,7 +238,7 @@ server {
     }
 }
 EOF
-        ln -sf /etc/nginx/sites-available/logwatch /etc/nginx/sites-enabled/
+        ln -sf /etc/nginx/sites-available/logvance /etc/nginx/sites-enabled/
         nginx -t && systemctl reload nginx
         log "Nginx configured: https://$DOMAIN:8443"
     fi
@@ -249,13 +249,13 @@ fi
 # ── STEP 9: Firewall ─────────────────────────────
 if $UFW_ACTIVE; then
     info "Configuring UFW..."
-    ufw allow $PORT/tcp comment "LogWatch" 2>/dev/null || true
+    ufw allow $PORT/tcp comment "Logvance" 2>/dev/null || true
     log "UFW: port $PORT allowed"
 fi
 
 # ── STEP 10: Permissions ─────────────────────────
-chown -R logwatch:logwatch /opt/logwatch
-chmod +x /opt/logwatch/bin/logwatch
+chown -R logvance:logvance /opt/logvance
+chmod +x /opt/logvance/bin/logvance
 
 # ── STEP 11: Setup admin ─────────────────────────
 echo ""
@@ -268,8 +268,8 @@ sleep 2
 
 # Create admin account
 # Admin credentials — environment variables ya defaults
-ADMIN_USER="${LOGWATCH_ADMIN_USER:-admin}"
-ADMIN_PASS="${LOGWATCH_ADMIN_PASS:-$(openssl rand -base64 12)}"
+ADMIN_USER="${LOGVANCE_ADMIN_USER:-admin}"
+ADMIN_PASS="${LOGVANCE_ADMIN_PASS:-$(openssl rand -base64 12)}"
 echo ""
 echo "  Admin username: $ADMIN_USER"
 echo "  Admin password: $ADMIN_PASS"
@@ -283,8 +283,8 @@ curl -s -X POST "http://127.0.0.1:$PORT/api/auth/setup" \
 echo ""
 $HAS_SSL && echo -e "  ${GREEN}Dashboard:${NC} https://$DOMAIN:8443" || \
             echo -e "  ${GREEN}Dashboard:${NC} http://$(curl -s ifconfig.me 2>/dev/null || echo 'YOUR_IP'):$PORT"
-echo -e "  ${GREEN}Status:${NC}    systemctl status logwatch"
-echo -e "  ${GREEN}Logs:${NC}      journalctl -u logwatch -f"
+echo -e "  ${GREEN}Status:${NC}    systemctl status logvance"
+echo -e "  ${GREEN}Logs:${NC}      journalctl -u logvance -f"
 echo ""
-echo "  Run this to monitor: journalctl -u logwatch -f"
+echo "  Run this to monitor: journalctl -u logvance -f"
 echo ""

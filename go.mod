@@ -1,4 +1,4 @@
-module github.com/yourusername/logwatch
+module github.com/yourusername/logvance
 
 go 1.25.0
 

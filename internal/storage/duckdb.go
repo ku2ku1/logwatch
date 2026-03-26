@@ -8,7 +8,7 @@ import (
 	"time"
 
 	_ "github.com/marcboeker/go-duckdb"
-	"github.com/yourusername/logwatch/internal/parser"
+	"github.com/yourusername/logvance/internal/parser"
 )
 
 type DB struct {

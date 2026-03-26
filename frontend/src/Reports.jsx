@@ -66,7 +66,7 @@ export default function Reports() {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>LogWatch Report — ${now}</title>
+<title>Logvance Report — ${now}</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: Arial, sans-serif; background:#fff; color:#1e293b; padding:40px; }
@@ -103,7 +103,7 @@ export default function Reports() {
   <div class="logo">
     <div class="logo-badge">LW</div>
     <div class="logo-text">
-      <h1>LogWatch Report</h1>
+      <h1>Logvance Report</h1>
       <p>Real-time VPS Log Analyzer</p>
     </div>
   </div>
@@ -173,7 +173,7 @@ export default function Reports() {
 </div>
 
 <div class="footer">
-  LogWatch — Self-hosted VPS Log Analyzer · Report generated on ${now}
+  Logvance — Self-hosted VPS Log Analyzer · Report generated on ${now}
 </div>
 </body>
 </html>`
@@ -225,7 +225,7 @@ export default function Reports() {
           desc="Full data export in JSON format — all metrics, IPs, paths, threats"
           actions={[
             { label:'Export JSON', icon:'⬇️', primary:true,
-              onClick: () => download(`${BASE}/api/v1/export/json?range=${rangeParam}`, `logwatch-${rangeParam}.json`) }
+              onClick: () => download(`${BASE}/api/v1/export/json?range=${rangeParam}`, `logvance-${rangeParam}.json`) }
           ]}
         />
 
@@ -235,7 +235,7 @@ export default function Reports() {
           desc="Top requested paths with request counts"
           actions={[
             { label:'Download CSV', icon:'⬇️', primary:true,
-              onClick: () => download(`${BASE}/api/v1/export/csv?type=paths&range=${rangeParam}`, `logwatch-paths-${rangeParam}.csv`) }
+              onClick: () => download(`${BASE}/api/v1/export/csv?type=paths&range=${rangeParam}`, `logvance-paths-${rangeParam}.csv`) }
           ]}
         />
 
@@ -245,7 +245,7 @@ export default function Reports() {
           desc="Top IP addresses with request counts"
           actions={[
             { label:'Download CSV', icon:'⬇️', primary:true,
-              onClick: () => download(`${BASE}/api/v1/export/csv?type=ips&range=${rangeParam}`, `logwatch-ips-${rangeParam}.csv`) }
+              onClick: () => download(`${BASE}/api/v1/export/csv?type=ips&range=${rangeParam}`, `logvance-ips-${rangeParam}.csv`) }
           ]}
         />
 
@@ -255,7 +255,7 @@ export default function Reports() {
           desc="All detected threats with IP, path, type, severity, score"
           actions={[
             { label:'Download CSV', icon:'⬇️', primary:true,
-              onClick: () => download(`${BASE}/api/v1/export/csv?type=threats&range=${rangeParam}`, `logwatch-threats-${rangeParam}.csv`) }
+              onClick: () => download(`${BASE}/api/v1/export/csv?type=threats&range=${rangeParam}`, `logvance-threats-${rangeParam}.csv`) }
           ]}
         />
 
@@ -265,7 +265,7 @@ export default function Reports() {
           desc="Security threats export only — for SIEM integration"
           actions={[
             { label:'Export Threats', icon:'⬇️', primary:true,
-              onClick: () => download(`${BASE}/api/v1/export/json?range=${rangeParam}`, `logwatch-threats-${rangeParam}.json`) }
+              onClick: () => download(`${BASE}/api/v1/export/json?range=${rangeParam}`, `logvance-threats-${rangeParam}.json`) }
           ]}
         />
       </div>

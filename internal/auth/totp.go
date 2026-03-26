@@ -39,7 +39,7 @@ type TOTPSetup struct {
 
 func (t *TOTPManager) Generate(userID int64, username string) (*TOTPSetup, error) {
 	key, err := totp.Generate(totp.GenerateOpts{
-		Issuer:      "LogWatch",
+		Issuer:      "Logvance",
 		AccountName: username,
 		Period:      30,
 		Digits:      6,
@@ -70,7 +70,7 @@ func (t *TOTPManager) Generate(userID int64, username string) (*TOTPSetup, error
 	return &TOTPSetup{
 		Secret:  key.Secret(),
 		QRCode:  qrBase64,
-		Issuer:  "LogWatch",
+		Issuer:  "Logvance",
 		Account: username,
 	}, nil
 }
@@ -95,10 +95,7 @@ func (t *TOTPManager) Enable(userID int64, code string) error {
 
 func (t *TOTPManager) IsEnabled(userID int64) bool {
 	var enabled bool
-	err := t.db.QueryRow(`SELECT enabled FROM user_totp WHERE user_id = $1`, userID).Scan(&enabled)
-	if err != nil {
-		return false
-	}
+	t.db.QueryRow(`SELECT enabled FROM user_totp WHERE user_id = $1`, userID).Scan(&enabled)
 	return enabled
 }
 

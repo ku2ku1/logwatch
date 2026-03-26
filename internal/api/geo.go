@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/yourusername/logwatch/internal/geoip"
-	"github.com/yourusername/logwatch/internal/storage"
+	"github.com/yourusername/logvance/internal/geoip"
+	"github.com/yourusername/logvance/internal/storage"
 )
 
 func (s *Server) handleGeoMap(w http.ResponseWriter, r *http.Request) {

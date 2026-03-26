@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  logwatch:
+  logvance:
     build: .
     ports:
       - "8080:8080"
@@ -19,7 +19,7 @@ services:
     image: duckdb/duckdb:latest
     volumes:
       - ./data:/data
-    command: ["duckdb", "/data/logwatch.db"]
+    command: ["duckdb", "/data/logvance.db"]
     restart: unless-stopped
 
 networks:

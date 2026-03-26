@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/yourusername/logwatch/internal/reports"
+	"github.com/yourusername/logvance/internal/reports"
 )
 
 func (s *Server) handleExportJSON(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +41,7 @@ func (s *Server) handleExportJSON(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="logwatch-export-%s.json"`, time.Now().Format("2006-01-02")))
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="logvance-export-%s.json"`, time.Now().Format("2006-01-02")))
 	json.NewEncoder(w).Encode(export)
 }
 
@@ -58,7 +58,7 @@ func (s *Server) handleExportCSV(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="logwatch-%s-%s.csv"`, dataType, time.Now().Format("2006-01-02")))
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="logvance-%s-%s.csv"`, dataType, time.Now().Format("2006-01-02")))
 
 	cw := csv.NewWriter(w)
 	defer cw.Flush()
@@ -107,13 +107,13 @@ func (s *Server) handleExportPDF(w http.ResponseWriter, r *http.Request) {
 	ips, _ := s.db.GetTopIPs(since, 10)
 	threats, _ := s.db.GetRecentThreats(20)
 
-	filename := fmt.Sprintf("/tmp/logwatch-report-%s.pdf", time.Now().Format("20060102-150405"))
+	filename := fmt.Sprintf("/tmp/logvance-report-%s.pdf", time.Now().Format("20060102-150405"))
 	if err := reports.GeneratePDF(stats, paths, ips, threats, filename); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/pdf")
-	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="logwatch-report-%s.pdf"`, time.Now().Format("2006-01-02")))
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="logvance-report-%s.pdf"`, time.Now().Format("2006-01-02")))
 	http.ServeFile(w, r, filename)
 }

@@ -3,7 +3,7 @@ server:
   port: 8080
 
 database:
-  path: "./data/logwatch.db"
+  path: "./data/logvance.db"
 
 logs:
   nginx_access: "/var/log/nginx/access.log"

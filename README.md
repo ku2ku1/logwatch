@@ -1,4 +1,4 @@
-# LogWatch
+# Logvance
 
 Self-hosted, real-time VPS log analyzer — GoAccess se behtar
 
@@ -27,8 +27,8 @@ npm --version
 ### 2. Clone & Build
 
 ```bash
-git clone https://github.com/yourusername/logwatch.git
-cd logwatch
+git clone https://github.com/yourusername/logvance.git
+cd logvance
 
 # Build backend
 make build
@@ -47,7 +47,7 @@ server:
   host: 127.0.0.1
   port: 8080
 database:
-  path: ./data/logwatch.db
+  path: ./data/logvance.db
 logs:
   nginx_access: /var/log/nginx/access.log
   nginx_error: /var/log/nginx/error.log
@@ -57,7 +57,7 @@ logs:
 
 ```bash
 # Backend
-./bin/logwatch
+./bin/logvance
 
 # Frontend (in another terminal)
 cd frontend && npm run dev
@@ -87,24 +87,24 @@ docker-compose up -d
 ### Systemd
 
 ```bash
-sudo useradd -r -s /bin/false logwatch
-sudo mkdir /opt/logwatch
-sudo cp bin/logwatch /opt/logwatch/
-sudo cp config.yaml /opt/logwatch/
-sudo cp -r data /opt/logwatch/
-sudo chown -R logwatch:logwatch /opt/logwatch
+sudo useradd -r -s /bin/false logvance
+sudo mkdir /opt/logvance
+sudo cp bin/logvance /opt/logvance/
+sudo cp config.yaml /opt/logvance/
+sudo cp -r data /opt/logvance/
+sudo chown -R logvance:logvance /opt/logvance
 
-sudo cp deploy/logwatch.service /etc/systemd/system/
+sudo cp deploy/logvance.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable logwatch
-sudo systemctl start logwatch
+sudo systemctl enable logvance
+sudo systemctl start logvance
 ```
 
 ### Nginx Reverse Proxy
 
 ```bash
-sudo cp deploy/nginx-logwatch.conf /etc/nginx/sites-available/logwatch
-sudo ln -s /etc/nginx/sites-available/logwatch /etc/nginx/sites-enabled/
+sudo cp deploy/nginx-logvance.conf /etc/nginx/sites-available/logvance
+sudo ln -s /etc/nginx/sites-available/logvance /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```

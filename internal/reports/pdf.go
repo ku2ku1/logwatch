@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/jung-kurt/gofpdf"
-	"github.com/yourusername/logwatch/internal/storage"
+	"github.com/yourusername/logvance/internal/storage"
 )
 
 func GeneratePDF(stats *storage.Stats, paths []storage.TopEntry, ips []storage.TopEntry, threats []storage.SecurityEvent, filename string) error {
@@ -14,7 +14,7 @@ func GeneratePDF(stats *storage.Stats, paths []storage.TopEntry, ips []storage.T
 	pdf.SetFont("Arial", "B", 16)
 
 	// Title
-	pdf.Cell(40, 10, "LogWatch Report")
+	pdf.Cell(40, 10, "Logvance Report")
 	pdf.Ln(12)
 
 	// Date

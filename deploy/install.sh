@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== LogWatch Installer ==="
+echo "=== Logvance Installer ==="
 
 # Check root
 if [ "$EUID" -ne 0 ]; then
@@ -10,50 +10,50 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Create user
-echo "[1/6] Creating logwatch user..."
-id -u logwatch &>/dev/null || useradd -r -s /bin/false -d /opt/logwatch logwatch
-usermod -aG adm logwatch  # log read access
+echo "[1/6] Creating logvance user..."
+id -u logvance &>/dev/null || useradd -r -s /bin/false -d /opt/logvance logvance
+usermod -aG adm logvance  # log read access
 
 # Create directories
 echo "[2/6] Creating directories..."
-mkdir -p /opt/logwatch/{bin,data,config}
+mkdir -p /opt/logvance/{bin,data,config}
 
 # Copy files
 echo "[3/6] Installing files..."
-cp bin/logwatch /opt/logwatch/bin/
-cp deploy/config.yaml /opt/logwatch/config/
-chmod +x /opt/logwatch/bin/logwatch
+cp bin/logvance /opt/logvance/bin/
+cp deploy/config.yaml /opt/logvance/config/
+chmod +x /opt/logvance/bin/logvance
 
 # Generate JWT secret
 JWT_SECRET=$(openssl rand -hex 32)
-sed -i "s/CHANGE_THIS_TO_RANDOM_SECRET/$JWT_SECRET/" deploy/logwatch.service
-echo "JWT_SECRET saved to /opt/logwatch/config/.env"
-echo "JWT_SECRET=$JWT_SECRET" > /opt/logwatch/config/.env
-chmod 600 /opt/logwatch/config/.env
+sed -i "s/CHANGE_THIS_TO_RANDOM_SECRET/$JWT_SECRET/" deploy/logvance.service
+echo "JWT_SECRET saved to /opt/logvance/config/.env"
+echo "JWT_SECRET=$JWT_SECRET" > /opt/logvance/config/.env
+chmod 600 /opt/logvance/config/.env
 
 # Permissions
 echo "[4/6] Setting permissions..."
-chown -R logwatch:logwatch /opt/logwatch
-chmod 750 /opt/logwatch/data
+chown -R logvance:logvance /opt/logvance
+chmod 750 /opt/logvance/data
 
 # Systemd
 echo "[5/6] Installing systemd service..."
-cp deploy/logwatch.service /etc/systemd/system/
+cp deploy/logvance.service /etc/systemd/system/
 systemctl daemon-reload
-systemctl enable logwatch
-systemctl start logwatch
+systemctl enable logvance
+systemctl start logvance
 
 # Nginx
 echo "[6/6] Configuring nginx..."
-cp deploy/nginx-logwatch.conf /etc/nginx/sites-available/logwatch
-ln -sf /etc/nginx/sites-available/logwatch /etc/nginx/sites-enabled/logwatch
+cp deploy/nginx-logvance.conf /etc/nginx/sites-available/logvance
+ln -sf /etc/nginx/sites-available/logvance /etc/nginx/sites-enabled/logvance
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
 
 echo ""
 echo "=== Installation Complete! ==="
 echo "Dashboard: http://$(curl -s ifconfig.me 2>/dev/null || echo 'your-vps-ip')"
-echo "Service status: systemctl status logwatch"
+echo "Service status: systemctl status logvance"
 echo ""
 echo "IMPORTANT: Create admin user first:"
 echo "curl -X POST http://localhost:8080/api/auth/setup \\"

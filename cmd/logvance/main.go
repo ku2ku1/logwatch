@@ -8,21 +8,21 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/yourusername/logwatch/config"
-	"github.com/yourusername/logwatch/internal/analyzer"
-	"github.com/yourusername/logwatch/internal/api"
-	"github.com/yourusername/logwatch/internal/auth"
-	"github.com/yourusername/logwatch/internal/geoip"
-	"github.com/yourusername/logwatch/internal/parser"
-	"github.com/yourusername/logwatch/internal/storage"
-	"github.com/yourusername/logwatch/internal/tailer"
+	"github.com/yourusername/logvance/config"
+	"github.com/yourusername/logvance/internal/analyzer"
+	"github.com/yourusername/logvance/internal/api"
+	"github.com/yourusername/logvance/internal/auth"
+	"github.com/yourusername/logvance/internal/geoip"
+	"github.com/yourusername/logvance/internal/parser"
+	"github.com/yourusername/logvance/internal/storage"
+	"github.com/yourusername/logvance/internal/tailer"
 )
 
 const batchSize = 1000
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.Println("[logwatch] starting...")
+	log.Println("[logvance] starting...")
 
 	cfg, err := config.Load("config.yaml")
 	if err != nil {
@@ -42,7 +42,7 @@ func main() {
 	// Auth
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		jwtSecret = "logwatch-dev-secret-change-in-production"
+		jwtSecret = "logvance-dev-secret-change-in-production"
 		log.Println("[auth] WARNING: using default JWT secret")
 	}
 	jwtManager := auth.NewJWTManager(jwtSecret)
@@ -78,7 +78,7 @@ func main() {
 		log.Println("[geoip] database not found, world map disabled")
 	}
 
-	log.Printf("[logwatch] database: %s", cfg.Database.Path)
+	log.Printf("[logvance] database: %s", cfg.Database.Path)
 
 	t, err := tailer.New(cfg.Logs.NginxAccess)
 	if err != nil {
@@ -89,10 +89,10 @@ func main() {
 	if err := t.Start(0); err != nil {
 		log.Fatalf("tail start: %v", err)
 	}
-	log.Printf("[logwatch] tailing: %s", cfg.Logs.NginxAccess)
+	log.Printf("[logvance] tailing: %s", cfg.Logs.NginxAccess)
 
 	numWorkers := runtime.NumCPU()
-	log.Printf("[logwatch] workers: %d", numWorkers)
+	log.Printf("[logvance] workers: %d", numWorkers)
 	parsed := make(chan *parser.LogEntry, 50000)
 
 	for i := 0; i < numWorkers; i++ {
@@ -168,11 +168,11 @@ func main() {
 		}
 	}()
 
-	log.Printf("[logwatch] ready — http://%s:%d", cfg.Server.Host, cfg.Server.Port)
+	log.Printf("[logvance] ready — http://%s:%d", cfg.Server.Host, cfg.Server.Port)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	sig := <-quit
-	log.Printf("[logwatch] shutdown: %v", sig)
-	log.Println("[logwatch] stopped cleanly")
+	log.Printf("[logvance] shutdown: %v", sig)
+	log.Println("[logvance] stopped cleanly")
 }

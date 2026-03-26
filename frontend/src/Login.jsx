@@ -4,7 +4,6 @@ import { login } from './api'
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [code, setCode] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -14,29 +13,12 @@ export default function Login({ onLogin }) {
     setLoading(true)
     setError('')
     try {
-      const data = await login(username, password, code)
+      const data = await login(username, password)
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
       onLogin(data.user)
-    } catch (err) {
-      // Parse error response from backend
-      let errorMsg = 'Invalid username ya password'
-      if (err.response?.status === 401) {
-        const errData = err.response?.data
-        if (typeof errData === 'string') {
-          try {
-            const parsed = JSON.parse(errData)
-            if (parsed.error === 'TOTP code required') {
-              errorMsg = '2FA code required. Enter your authenticator code.'
-            } else if (parsed.error === 'invalid TOTP code') {
-              errorMsg = 'Invalid 2FA code. Try again.'
-            } else if (parsed.error === 'invalid code') {
-              errorMsg = 'Invalid 2FA code. Try again.'
-            }
-          } catch {}
-        }
-      }
-      setError(errorMsg)
+    } catch {
+      setError('Invalid username ya password')
     } finally {
       setLoading(false)
     }
@@ -48,7 +30,7 @@ export default function Login({ onLogin }) {
         <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:32 }}>
           <div style={{ width:40, height:40, background:'#6366f1', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:800, fontSize:15 }}>LW</div>
           <div>
-            <div style={{ color:'#f1f5f9', fontWeight:700, fontSize:18 }}>LogWatch</div>
+            <div style={{ color:'#f1f5f9', fontWeight:700, fontSize:18 }}>Logvance</div>
             <div style={{ color:'#64748b', fontSize:12 }}>Sign in to your account</div>
           </div>
         </div>
@@ -72,16 +54,6 @@ export default function Login({ onLogin }) {
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
-              style={{ width:'100%', background:'#0f172a', border:'1px solid #2d3748', borderRadius:8, padding:'10px 14px', color:'#e2e8f0', fontSize:14, outline:'none', boxSizing:'border-box' }}
-            />
-          </div>
-          <div style={{ marginBottom:24 }}>
-            <label style={{ color:'#94a3b8', fontSize:12, fontWeight:600, textTransform:'uppercase', letterSpacing:1, display:'block', marginBottom:6 }}>2FA Code (if enabled)</label>
-            <input
-              type="text"
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              placeholder="123456"
               style={{ width:'100%', background:'#0f172a', border:'1px solid #2d3748', borderRadius:8, padding:'10px 14px', color:'#e2e8f0', fontSize:14, outline:'none', boxSizing:'border-box' }}
             />
           </div>

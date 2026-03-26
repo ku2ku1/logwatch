@@ -17,10 +17,6 @@ api.interceptors.response.use(
   r => r,
   err => {
     if (err.response?.status === 401) {
-      // Don't redirect if we're logging in (allow 401 to pass through for TOTP handling)
-      if (err.config?.url?.includes('/api/auth/login')) {
-        return Promise.reject(err)
-      }
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       window.location.href = '/login'
@@ -29,7 +25,7 @@ api.interceptors.response.use(
   }
 )
 
-export const login = (u, p, c) => api.post('/api/auth/login', { username:u, password:p, code:c }).then(r => r.data)
+export const login = (u, p) => api.post('/api/auth/login', { username:u, password:p }).then(r => r.data)
 export const logout = () => api.post('/api/auth/logout').then(r => r.data)
 export const getMe = () => api.get('/api/auth/me').then(r => r.data)
 export const getStats = () => api.get('/api/v1/stats').then(r => r.data)

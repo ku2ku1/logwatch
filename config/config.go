@@ -37,7 +37,7 @@ func Load(path string) (*Config, error) {
 	cfg := &Config{}
 	cfg.Server.Host = "127.0.0.1"
 	cfg.Server.Port = 8080
-	cfg.Database.Path = "./data/logwatch.db"
+	cfg.Database.Path = "./data/logvance.db"
 	cfg.Logs.NginxAccess = "/var/log/nginx/access.log"
 	cfg.Logs.AuthLog = "/var/log/auth.log"
 	cfg.Logs.Fail2banLog = "/var/log/fail2ban.log"

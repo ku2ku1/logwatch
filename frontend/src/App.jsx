@@ -297,6 +297,7 @@ function UsersPage({ currentUser }) {
 }
 
 export default function App() {
+  useEffect(() => { document.title = "Logvance - VPS Log Analyzer"; }, []);
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('user')) } catch { return null }
   })
@@ -376,7 +377,7 @@ export default function App() {
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
           <div style={{ width:32, height:32, background:'#6366f1', borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:800, fontSize:13 }}>LW</div>
           <div>
-            <div style={{ color:'white', fontWeight:700, fontSize:15, lineHeight:1 }}>LogWatch</div>
+            <div style={{ color:'white', fontWeight:700, fontSize:15, lineHeight:1 }}>Logvance</div>
             <div style={{ color:'#64748b', fontSize:11 }}>Real-time VPS log analyzer</div>
           </div>
         </div>

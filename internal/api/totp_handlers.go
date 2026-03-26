@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/yourusername/logwatch/internal/auth"
+	"github.com/yourusername/logvance/internal/auth"
 )
 
 func (s *Server) handleTOTPSetup(w http.ResponseWriter, r *http.Request) {
