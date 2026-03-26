@@ -31,7 +31,7 @@ func New(db *storage.DB, port int, jwt *auth.JWTManager, users *auth.UserStore) 
 	hub := NewHub()
 	go hub.Run()
 	apiRL  := NewRateLimiter(100, 60*time.Second, 60*time.Second)
-	authRL := NewRateLimiter(20, 60*time.Second, 5*60*time.Second)
+	authRL := NewRateLimiter(5, 60*time.Second, 5*60*time.Second)
 	return &Server{db: db, port: port, jwt: jwt, users: users, hub: hub, apiRL: apiRL, authRL: authRL}
 }
 
@@ -41,7 +41,7 @@ func (s *Server) Start() error {
 	r.Use(middleware.Recoverer)
 	r.Use(securityHeaders)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174", "http://autun8nservice.duckdns.org:9090", "https://autun8nservice.duckdns.org:9090"},
+		AllowedOrigins:   []string{"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174", "http://127.0.0.1:5174"},
 		AllowedMethods:   []string{"GET", "POST", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
@@ -132,7 +132,6 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
-		Code     string `json:"code,omitempty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error":"invalid request"}`, http.StatusBadRequest)
@@ -142,18 +141,6 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, `{"error":"invalid credentials"}`, http.StatusUnauthorized)
 		return
-	}
-	// Check TOTP if enabled
-	if s.totp != nil && s.totp.IsEnabled(user.ID) {
-		if req.Code == "" {
-			http.Error(w, `{"error":"TOTP code required"}`, http.StatusUnauthorized)
-			return
-		}
-		valid, err := s.totp.Verify(user.ID, req.Code)
-		if err != nil || !valid {
-			http.Error(w, `{"error":"invalid TOTP code"}`, http.StatusUnauthorized)
-			return
-		}
 	}
 	token, err := s.jwt.Generate(user)
 	if err != nil {

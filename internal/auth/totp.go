@@ -95,10 +95,7 @@ func (t *TOTPManager) Enable(userID int64, code string) error {
 
 func (t *TOTPManager) IsEnabled(userID int64) bool {
 	var enabled bool
-	err := t.db.QueryRow(`SELECT enabled FROM user_totp WHERE user_id = $1`, userID).Scan(&enabled)
-	if err != nil {
-		return false
-	}
+	t.db.QueryRow(`SELECT enabled FROM user_totp WHERE user_id = $1`, userID).Scan(&enabled)
 	return enabled
 }
 
