@@ -49,6 +49,7 @@ func (s *Server) Start() error {
 
 	// Public routes
 	r.Get("/health", s.handleHealth)
+	r.Get("/api/health", s.handleHealth)
 	r.With(s.authRL.AuthMiddleware).Post("/api/auth/login", s.handleLogin)
 	r.Post("/api/auth/setup", s.handleSetup) // First-run admin setup
 	r.Get("/api/v1/ws", s.handleWebSocket) // WebSocket — JWT check inside handler
